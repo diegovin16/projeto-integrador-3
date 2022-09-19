@@ -1,0 +1,8 @@
+Data 12/09/2022
+- Foi utilizado a ferramenta Octoparse para coletar dados de vagas de emprego na plataforma Glassdoor
+- Palavras chave utilizadas: Engenheiro de software, Analista de sistemas, Desenvolvedor e Programador
+- Total de dados coletados 1680, sendo: 
+  - Engenheiro de software: 150
+  - Programador: 510
+  - Analista de sistemas: 510
+  - Desenvolvedor: 510
