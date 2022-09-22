@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "JobOffer" ALTER COLUMN "rating" SET DATA TYPE TEXT;

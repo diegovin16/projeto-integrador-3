@@ -1,0 +1,16 @@
+{
+  "name": "projeto-integrador-3",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:diegovin16/projeto-integrador-3.git",
+  "author": "Diego Araujo <diegovin16@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "sheet-to-db": "node sheet-to-database.js"
+  },
+  "dependencies": {
+    "@prisma/client": "4.3.1",
+    "prisma": "^4.3.1",
+    "read-excel-file": "^5.5.0"
+  }
+}
