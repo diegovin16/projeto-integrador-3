@@ -5,6 +5,9 @@
   "repository": "git@github.com:diegovin16/projeto-integrador-3.git",
   "author": "Diego Araujo <diegovin16@gmail.com>",
   "license": "MIT",
+  "prisma": {
+    "seed": "node prisma/seed.js"
+  },
   "scripts": {
     "sheet-to-db": "node sheet-to-database.js"
   },

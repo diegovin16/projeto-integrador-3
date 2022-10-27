@@ -11,10 +11,10 @@ datasource db {
 }
 
 model JobOffer {
-  id            String   @id @default(uuid())
+  id            String       @id @default(uuid())
   keyword       String?
   location      String?
-  company       String?
+  company       Company?     @relation(fields: [companyId], references: [id])
   rating        String?
   title         String?
   place         String?
@@ -22,6 +22,28 @@ model JobOffer {
   salaryAverage String?
   postDate      String?
   description   String?
-  technologies  String[]
-  isRemote      Boolean  @default(false)
+  technologies  Technology[]
+  isRemote      Boolean      @default(false)
+  companyId     String?
+  salaryRange   SalaryRange? @relation(fields: [salaryRangeId], references: [id])
+  salaryRangeId String?
+}
+
+model Technology {
+  id       String     @id @default(uuid())
+  name     String
+  JobOffer JobOffer[]
+}
+
+model Company {
+  id       String     @id @default(uuid())
+  name     String
+  JobOffer JobOffer[]
+}
+
+model SalaryRange {
+  id       String     @id @default(uuid())
+  from     String
+  to       String
+  JobOffer JobOffer[]
 }

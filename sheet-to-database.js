@@ -7,35 +7,14 @@ const BASE_DATE = new Date('2022-09-12T00:00:00.000Z')
 const ONE_DAY_IN_TIME = 86400000
 const ONE_HOUR_IN_TIME = 3600000
 const ONE_MINUTE_IN_TIME = 60000
-const TECHNOLOGIES = [
-  'javascript',
-  'react',
-  'vue',
-  'java',
-  'c#',
-  'python',
-  'typescript',
-  'rust',
-  'aws',
-  'oracle',
-  'mysql',
-  'postgres',
-  'postgresql',
-  'c++',
-  'next',
-  'git',
-  'github',
-  'php',
-  'css',
-  'html',
-  'api',
-  'linux',
-  'postman',
-  'figma',
-]
 
 const LIST_REMOTE_WORK_WORDS = ['trabalho remoto']
-
+const normalizeString = (string) =>
+  string
+    ?.normalize('NFD')
+    ?.replace(/[\u0300-\u036f]/g, '')
+    ?.toUpperCase()
+    ?.trim()
 const map = {
   0: 'keyword',
   1: 'location',
@@ -48,15 +27,19 @@ const map = {
   9: 'description',
 }
 
-const getTechnologies = (value) => {
+const getTechnologies = (value, TECHNOLOGIES) => {
   const technologies = []
   if (!value.description) return
   for (const technology of TECHNOLOGIES) {
-    if (value.description.toLowerCase().includes(technology)) {
-      technologies.push(technology)
+    if (value.description.toLowerCase().includes(technology.name)) {
+      technologies.push({
+        id: technology.id,
+      })
     }
   }
-  return technologies
+  return {
+    connect: technologies,
+  }
 }
 
 const resolveDate = (date) => {
@@ -88,6 +71,11 @@ function isNumeric(value) {
 
 const main = async () => {
   const values = []
+
+  const salaryRanges = await prisma.salaryRange.findMany({})
+  const technologies = await prisma.technology.findMany({})
+  const companies = await prisma.company.findMany({})
+
   await readXlsxFile('./input/job-offers.xlsx').then((rows) => {
     for (let i = 1; i < rows.length; i++) {
       const row = rows[i]
@@ -98,10 +86,14 @@ const main = async () => {
         const isPostDateColumn = map[j] === 'postDate'
         const isPlaceColumn = map[j] === 'place'
         const isSalaryColumn = map[j] === 'salary'
+        const isCompanyColumn = map[j] === 'company'
 
         let postDate,
           isRemote = false,
-          salaryAverage
+          salaryAverage,
+          companyId,
+          salaryRangeId
+
         if (isPostDateColumn) {
           postDate = column
           const resultDate = resolveDate(column)
@@ -124,6 +116,23 @@ const main = async () => {
             const secondValue = values[1].replace('R$', '').replace('K', '')
             const average = (Number(firstValue) + Number(secondValue)) / 2
             salaryAverage = `R$${average}K`
+
+            for (const range of salaryRanges) {
+              if (
+                average >= Number(range.from) &&
+                average <= Number(range.to)
+              ) {
+                salaryRangeId = range.id
+                break
+              }
+            }
+          }
+        }
+        if (isCompanyColumn && column) {
+          column = normalizeString(column)
+          const companyFounded = companies.find((c) => c.name === column)
+          if (companyFounded) {
+            companyId = companyFounded.id
           }
         }
         value = {
@@ -137,13 +146,21 @@ const main = async () => {
           }),
           ...(isSalaryColumn && {
             salaryAverage,
+            salaryRangeId,
+          }),
+          ...(isCompanyColumn && {
+            companyId,
           }),
         }
       }
-      values.push({ ...value, technologies: getTechnologies(value) })
+      values.push({
+        ...value,
+        technologies: getTechnologies(value, technologies),
+      })
     }
   })
   for (const value of values) {
+    delete value.company
     await prisma.jobOffer.create({
       data: value,
     })
